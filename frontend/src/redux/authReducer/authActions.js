@@ -38,7 +38,9 @@ const getAllUsersActionFn = () => (dispatch) => {
   return axios
     .get(`${auth_url}/user/getall`, {
       headers: {
-        authorization: `Bearer ${JSON.parse(localStorage.getItem("TOKEN"))}`,
+        authorization: `Bearer ${
+          JSON.parse(localStorage.getItem("user")).token
+        }`,
       },
     })
     .then((res) => {

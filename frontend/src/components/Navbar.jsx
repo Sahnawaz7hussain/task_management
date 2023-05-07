@@ -96,7 +96,7 @@ function Navbar() {
               }}
             >
               <MenuItem onClick={(event) => setAnchorElNav(null)}>
-                <Link to="/">
+                <Link to="/" style={{ textDecoration: "none" }}>
                   <Typography textAlign="center">Tasks</Typography>
                 </Link>
               </MenuItem>
@@ -119,7 +119,7 @@ function Navbar() {
             </Link>
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            <Link to="/">
+            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
               <Button
                 onClick={(event) => setAnchorElNav(null)}
                 sx={{ my: 2, color: "white", display: "block" }}
@@ -136,7 +136,7 @@ function Navbar() {
                 style={{ textDecoration: "none", color: "inherit" }}
               >
                 <Tooltip title="Invitations" sx={{ mr: 3 }}>
-                  <Badge badgeContent={data.length} color="secondary">
+                  <Badge badgeContent={data?.length} color="secondary">
                     <NotificationsNoneOutlinedIcon />
                   </Badge>
                 </Tooltip>
@@ -171,6 +171,7 @@ function Navbar() {
                     <MenuItem
                       key={setting}
                       onClick={(event) => setAnchorElUser(null)}
+                      sx={{ color: setting === "Logout" ? "red" : "" }}
                     >
                       <Typography
                         onClick={() => handleLogout(setting)}

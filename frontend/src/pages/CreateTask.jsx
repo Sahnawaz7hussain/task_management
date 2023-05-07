@@ -51,6 +51,8 @@ const CreateTask = () => {
               postInviteActionFn({
                 invitations: invite,
                 task: res.payload.task._id,
+                title: data.title,
+                ...getNameAndEmail(),
               })
             ).then((res) => {
               alert(`New task created`);
@@ -63,12 +65,10 @@ const CreateTask = () => {
         } else {
           alert(`${res.payload.message}`);
         }
-        //console.log("res: ", res);
       })
       .catch((err) => {
         console.log(err);
       });
-    // console.log("d: ", data);
   };
 
   const handleCheckbox = (e) => {
@@ -146,3 +146,8 @@ const CreateTask = () => {
 };
 
 export default CreateTask;
+
+function getNameAndEmail() {
+  let data = JSON.parse(localStorage.getItem("user"));
+  return { name: data.name, email: data.email };
+}

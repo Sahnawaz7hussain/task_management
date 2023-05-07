@@ -37,7 +37,13 @@ const login = async (req, res) => {
       // generate token
 
       const token = jwt.sign({ userId: userFound._id }, secret);
-      res.status(200).send({ message: "Login Success", token: token });
+      res.status(200).send({
+        message: "Login Success",
+        token: token,
+        name: userFound.name,
+        id: userFound._id,
+        email: userFound.email,
+      });
     } else {
       return res.status(401).json({ message: "Wrong password" });
     }

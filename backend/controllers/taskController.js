@@ -1,15 +1,42 @@
 const { TaskModel } = require("../models/taskModel");
 
-const getTask = async (req, res) => {
+// GET TASK
+const getTasks = async (req, res) => {
+  const query = req.query;
+  let { _page = 1, tasks } = query;
+  let params = {};
+  let Limit = 9;
+  let Skip = Limit * (_page - 1);
+  if (tasks === "all" || tasks === undefined) {
+    delete params.status;
+  } else {
+    params.status = tasks;
+  }
   try {
+    let taskCount = await TaskModel.find({
+      $or: [
+        { userId: req.body.userId },
+        { collaborators: { $all: [req.body.userId] } },
+      ],
+      ...params,
+    }).countDocuments();
+    let pendingTasks = await TaskModel.find({
+      userId: req.body.userId,
+      status: { $ne: "completed" },
+    }).countDocuments();
+    let totalPages = Math.ceil(taskCount / Limit);
     let task = await TaskModel.find({
       $or: [
         { userId: req.body.userId },
         { collaborators: { $all: [req.body.userId] } },
       ],
-    });
+      ...params,
+    })
+      .limit(Limit)
+      .skip(Skip)
+      .populate("userId", "name");
 
-    res.status(200).json({ task });
+    res.status(200).json({ task, totalPages, pendingTasks });
   } catch (err) {
     res.status(401).json({
       message: "something went wrong pleae try again later",
@@ -17,6 +44,28 @@ const getTask = async (req, res) => {
     });
   }
 };
+// GET TASK
+const getDeadlineExcededTasks = async (req, res) => {
+  try {
+    let tasks = await TaskModel.find({
+      $or: [
+        { userId: req.body.userId },
+        { collaborators: { $all: [req.body.userId] } },
+      ],
+    }).populate("userId", "name");
+
+    const filteredTasks = deadlineExcededTasks(tasks);
+    let sortedTasks = sortByDueDate(filteredTasks);
+    res.status(200).json({ task: sortedTasks });
+  } catch (err) {
+    res.status(401).json({
+      message: "something went wrong pleae try again later",
+      err: err.message,
+    });
+  }
+};
+
+// GET A TASK BY ID
 const getTaskById = async (req, res) => {
   const taskId = req.params.id;
   try {
@@ -30,6 +79,8 @@ const getTaskById = async (req, res) => {
     });
   }
 };
+
+// CREATE/ADD NEW TASK
 const addTask = async (req, res) => {
   try {
     let data = req.body;
@@ -43,6 +94,8 @@ const addTask = async (req, res) => {
     });
   }
 };
+
+// UPDATE TASK
 const updateTask = async (req, res) => {
   let id = req.params.id;
   try {
@@ -56,7 +109,7 @@ const updateTask = async (req, res) => {
       }
     );
 
-    res.status(200).json({ message: "task updated", task: newTask });
+    res.status(200).json({ message: "Task updated", task: newTask });
   } catch (err) {
     res.status(401).json({
       message: "something went wrong pleae try again later",
@@ -64,6 +117,8 @@ const updateTask = async (req, res) => {
     });
   }
 };
+
+// UPDATE COLLABORATOS
 const updateCollaborator = async (req, res) => {
   let id = req.params.id;
   try {
@@ -80,6 +135,7 @@ const updateCollaborator = async (req, res) => {
     });
   }
 };
+//DELETE TASK
 const deleteTask = async (req, res) => {
   let id = req.params.id;
   try {
@@ -93,11 +149,38 @@ const deleteTask = async (req, res) => {
   }
 };
 
+function deadlineExcededTasks(tasks) {
+  const today = new Date();
+  const overdueTasks = tasks.filter((task) => {
+    const dueDate = new Date(task.dueDate.split("-").reverse().join("-"));
+    return (
+      task.status !== "completed" &&
+      dueDate < today &&
+      !(
+        dueDate.getDate() === today.getDate() &&
+        dueDate.getMonth() === today.getMonth() &&
+        dueDate.getFullYear() === today.getFullYear()
+      )
+    );
+  });
+  return overdueTasks;
+}
+
+function sortByDueDate(tasks) {
+  tasks.sort((a, b) => {
+    const dateA = new Date(a.dueDate.split("-").reverse().join("-"));
+    const dateB = new Date(b.dueDate.split("-").reverse().join("-"));
+    return dateA - dateB;
+  });
+  return tasks;
+}
+
 module.exports = {
-  getTask,
+  getTasks,
   addTask,
   updateTask,
   deleteTask,
   getTaskById,
   updateCollaborator,
+  getDeadlineExcededTasks,
 };

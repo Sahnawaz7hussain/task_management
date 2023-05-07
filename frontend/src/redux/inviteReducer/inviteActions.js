@@ -1,3 +1,4 @@
+import { headerObject } from "../../utils/header";
 import * as types from "./inviteActionTypes";
 import axios from "axios";
 
@@ -8,9 +9,7 @@ const postInviteActionFn = (invite) => (dispatch) => {
   dispatch({ type: types.ADD_INVITE_REQUEST });
   return axios
     .post(`${base_url}/invite/add`, invite, {
-      headers: {
-        authorization: `Bearer ${JSON.parse(localStorage.getItem("TOKEN"))}`,
-      },
+      headers: headerObject(),
     })
     .then((res) => {
       return dispatch({ type: types.ADD_INVITE_SUCCESS, payload: res.data });
@@ -27,9 +26,7 @@ const postInviteActionFn = (invite) => (dispatch) => {
 const getInviteActionFn = () => (dispatch) => {
   dispatch({ type: types.GET_INVITE_REQUEST });
   return axios(`${base_url}/invite/get`, {
-    headers: {
-      authorization: `Bearer ${JSON.parse(localStorage.getItem("TOKEN"))}`,
-    },
+    headers: headerObject(),
   })
     .then((res) => {
       return dispatch({
@@ -47,9 +44,7 @@ const deleteInviteActionFn = (id) => (dispatch) => {
   dispatch({ type: types.DELETE_INVITE_REQUEST });
   return axios
     .delete(`${base_url}/task/delete/${id}`, {
-      headers: {
-        authorization: `Bearer ${JSON.parse(localStorage.getItem("TOKEN"))}`,
-      },
+      headers: headerObject(),
     })
     .then((res) => {
       return dispatch({
@@ -68,9 +63,7 @@ const updateInviteActionFn =
     dispatch({ type: types.UPDATE_INVITE_REQUEST });
     return axios
       .put(`${base_url}/invite/update/${id}`, data, {
-        headers: {
-          authorization: `Bearer ${JSON.parse(localStorage.getItem("TOKEN"))}`,
-        },
+        headers: headerObject(),
       })
       .then((res) => {
         return dispatch({

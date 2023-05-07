@@ -1,6 +1,6 @@
 import * as types from "./authActionTypes";
-const userToken = JSON.parse(localStorage.getItem("TOKEN"));
-const isAuth = userToken ? true : false;
+const loggedInUser = JSON.parse(localStorage.getItem("user")) || null;
+const isAuth = loggedInUser ? true : false;
 const initAuthData = {
   isAuth: isAuth,
   isLoading: false,
@@ -43,7 +43,7 @@ const authReducer = (oldState = initAuthData, action) => {
         isAuth: false,
       };
     case types.USER_LOGIN_SUCCESS:
-      localStorage.setItem("TOKEN", JSON.stringify(payload.token));
+      localStorage.setItem("user", JSON.stringify(payload));
       return {
         ...oldState,
         isLoading: false,
@@ -60,7 +60,7 @@ const authReducer = (oldState = initAuthData, action) => {
         isAuth: false,
       };
     case types.USER_LOGOUT_REQUEST:
-      localStorage.removeItem("TOKEN");
+      localStorage.removeItem("user");
       return {
         ...oldState,
         isLoading: false,

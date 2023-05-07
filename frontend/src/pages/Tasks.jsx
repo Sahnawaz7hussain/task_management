@@ -1,32 +1,74 @@
-import { Box, Button, Grid, Stack, Typography } from "@mui/material";
-import React, { useEffect } from "react";
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  Typography,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   deleteTaskActionFn,
+  getDeadlineExceededTasksActionFn,
   getTaskActionFn,
 } from "../redux/taskReducer/taskActions";
 
 const Tasks = () => {
   const dispatch = useDispatch();
-  const taskState = useSelector(function (state) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filter, setFilter] = useState(searchParams.get("tasks") || "all");
+  const [page, setPage] = useState(searchParams.get("_page") || 1);
+  const [isDeadline, setIsDeadline] = useState(false);
+  const { isLoading, isError, data } = useSelector(function (state) {
     return state.taskReducer;
   });
 
-  //console.log("sa: ", taskState);
-  function getTasks() {
-    dispatch(getTaskActionFn());
+  console.log(data);
+  function getTasks(params) {
+    dispatch(getTaskActionFn(params));
   }
+  useEffect(() => {
+    const params = {};
+    params.tasks = filter;
+    params._page = page;
+
+    setSearchParams(params);
+  }, [filter, page]);
 
   useEffect(() => {
-    const cleanup = getTasks();
+    const query = {};
+    filter && (query.tasks = searchParams.get("tasks"));
+    page && (query._page = searchParams.get("_page"));
+    if (query.tasks !== null || query._page !== null) {
+      getTasks(query);
+    }
+  }, [searchParams]);
 
-    return () => {
-      cleanup;
-    };
-  }, []);
+  // HANLDE GET DEADLINE PASSED TASKS;
+  const handleOnClickDeadlineExceeded = () => {
+    if (isDeadline) return;
+    setSearchParams({});
+    setIsDeadline(true);
+    dispatch(getDeadlineExceededTasksActionFn());
+  };
 
+  // HANDLE ONCHANGE OF FILTER TASKS
+  const handleOnChangeFilter = (e) => {
+    setFilter(e.target.value);
+    setIsDeadline(false);
+  };
+  // HANDLE ONCLICK PAGINATION
+  const handleOnClickPagination = (val) => {
+    setPage((pre) => Number(pre) + val);
+    setIsDeadline(false);
+  };
+
+  // DELETE A TASK BY ID
   const deleteTask = (id) => {
     dispatch(deleteTaskActionFn(id))
       .then((res) => {
@@ -37,14 +79,15 @@ const Tasks = () => {
       });
   };
 
+  // UPDATE TASK TITLE OR DESCRIPTION.
   const updateTask = (id) => {
     alert(`${id}`);
   };
   return (
-    <Box>
+    <Box sx={{ px: { xs: 2, sm: 2, md: 5 } }}>
       <Stack
         direction={"row"}
-        sx={{ px: 5, my: "15px" }}
+        sx={{ px: 0, my: "15px" }}
         justifyContent={"space-between"}
       >
         <Typography variant="h4">Tasks</Typography>
@@ -52,14 +95,54 @@ const Tasks = () => {
           <Button variant="contained">Create new Task</Button>
         </Link>
       </Stack>
+
+      <Stack
+        direction={{ sx: "column", sm: "row", md: "row" }}
+        sx={{ width: "fit-content", minWidth: 100, mb: 2, gap: 2 }}
+      >
+        <FormControl>
+          <InputLabel id="demo-simple-select-label">Filter</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            label="Filter"
+            value={filter}
+            onChange={handleOnChangeFilter}
+          >
+            <MenuItem value={"all"}>All Tasks</MenuItem>
+            <MenuItem value={"todo"} sx={{ color: "orange" }}>
+              Todo
+            </MenuItem>
+            <MenuItem value={"inprogress"} sx={{ color: "orange" }}>
+              Inprogress
+            </MenuItem>
+            <MenuItem value={"completed"} sx={{ color: "green" }}>
+              Completed
+            </MenuItem>
+          </Select>
+        </FormControl>
+        <Button
+          variant={isDeadline ? "contained" : "outlined"}
+          color="error"
+          onClick={handleOnClickDeadlineExceeded}
+        >
+          Deadline Exceeded
+        </Button>
+        {data?.pendingTasks && (
+          <Button variant="outlined" color="warning">
+            {data.pendingTasks} Pending tasks
+          </Button>
+        )}
+      </Stack>
       <Box
         sx={{
           display: "grid",
+          gap: 4,
           gridTemplateColumns: { sm: `repeat(1,1fr)`, md: `repeat(3,1fr)` },
         }}
       >
-        {taskState.data.length > 0 &&
-          taskState.data.map((task, idx) => (
+        {data.task?.length > 0 &&
+          data.task.map((task, idx) => (
             <TaskCard
               key={idx}
               task={task}
@@ -68,6 +151,35 @@ const Tasks = () => {
             />
           ))}
       </Box>
+      {data?.totalPages && (
+        <Stack
+          direction={"row"}
+          sx={{
+            alignItems: "center",
+            gap: 2,
+
+            width: "fit-content",
+            m: "auto",
+            my: 2,
+          }}
+        >
+          <Button
+            variant="contained"
+            disabled={page <= 1}
+            onClick={() => handleOnClickPagination(-1)}
+          >
+            Prev
+          </Button>
+          <Typography>{page}</Typography>
+          <Button
+            variant="contained"
+            disabled={page == data?.totalPages}
+            onClick={() => handleOnClickPagination(+1)}
+          >
+            Next
+          </Button>
+        </Stack>
+      )}
     </Box>
   );
 };

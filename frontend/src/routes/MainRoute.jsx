@@ -7,8 +7,7 @@ import PrivateRoute from "./PrivateRoute";
 import CreateTask from "../pages/CreateTask";
 import { Typography } from "@mui/material";
 import UpdateTask from "../pages/UpdateTask";
-import Invitations from "../pages/Invitations";
-
+import Invitation from "../pages/Invitation";
 const MainRoute = () => {
   return (
     <Routes>
@@ -38,10 +37,10 @@ const MainRoute = () => {
         }
       />
       <Route
-        path="/invitations"
+        path="/invitation/:taskId"
         element={
           <PrivateRoute>
-            <Invitations />
+            <Invitation />
           </PrivateRoute>
         }
       />
