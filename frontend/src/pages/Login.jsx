@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { userLoginActionFn } from "../redux/authReducer/authActions";
 
@@ -20,6 +20,7 @@ const theme = createTheme();
 
 export default function Login() {
   const dispatch = useDispatch();
+  const location = useLocation();
   const navigate = useNavigate();
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -34,7 +35,8 @@ export default function Login() {
       .then((res) => {
         if (res.type === "USER_LOGIN_SUCCESS") {
           alert(`${res.payload.message}`);
-          navigate("/");
+          const navigatePath = location.state ? location.state.from : "/";
+          navigate(navigatePath, { replace: true });
         } else {
           alert(`${res.payload}`);
         }

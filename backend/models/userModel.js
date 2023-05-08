@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password can't be empty!"],
     },
+    verified: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false }
 );

@@ -5,14 +5,28 @@ import {
   CardActions,
   CardContent,
   Chip,
+  Menu,
+  MenuItem,
   Stack,
   Typography,
 } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
 
-const TaskCard = ({ task, deleteTask }) => {
+const TaskCard = ({ task, deleteTask, updateTaskStatus }) => {
   // console.log("tasK : ", task);
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleUpdateStatus = (status, taskId) => {
+    setAnchorEl(null);
+    if (status === undefined || taskId === undefined) return;
+    updateTaskStatus(status, taskId);
+    //console.log("chip: ", status, id);
+  };
 
   return (
     <>
@@ -41,12 +55,39 @@ const TaskCard = ({ task, deleteTask }) => {
             }}
           >
             <Chip
+              aria-controls={open ? "basic-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+              onClick={handleClick}
               label={task.status}
               sx={{
                 color: "#fff",
                 background: task.status === "completed" ? "green" : "orange",
               }}
             />
+            <Menu
+              id="basic-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={() => handleUpdateStatus()}
+              MenuListProps={{
+                "aria-labelledby": "basic-button",
+              }}
+            >
+              <MenuItem onClick={() => handleUpdateStatus("todo", task._id)}>
+                Todo
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleUpdateStatus("inprogress", task._id)}
+              >
+                Inprogress
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleUpdateStatus("completed", task._id)}
+              >
+                Completed
+              </MenuItem>
+            </Menu>
             <Chip
               label={`Due ${task.dueDate}`}
               sx={{ color: "#fff", background: "blue" }}

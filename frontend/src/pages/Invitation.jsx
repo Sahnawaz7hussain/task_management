@@ -22,45 +22,73 @@ import {
 import { Link, useParams } from "react-router-dom";
 
 const Invitation = () => {
+  const { taskId } = useParams(); //
   const dispatch = useDispatch();
   const [invitation, setInvitation] = useState({});
-  const { taskId } = useParams(); //
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   // const taskId = "6457c60ad5eacabb72244090";
-  const inviteData = useSelector((state) => state.taskReducer);
   useEffect(() => {
-    dispatch(getTaskByIdActionFn(taskId))
+    // dispatch(getTaskByIdActionFn(taskId))
+    //   .then((res) => {
+    //     setInvitation(res.payload);
+    //     console.log("res: ", res);
+    //   })
+    //   .catch((err) => {
+    //     console.log("err: ", err);
+    //   });
+    setLoading(true);
+    dispatch(getInviteActionFn(taskId))
       .then((res) => {
         setInvitation(res.payload);
         console.log("res: ", res);
+        setLoading(false);
       })
       .catch((err) => {
         console.log("err: ", err);
+        setLoading(false);
       });
   }, []);
 
   const handleAccept = (id, taskId) => {
     dispatch(updateInviteActionFn(id))
       .then((res) => {
-        // console.log("res: ", res);
+        console.log("update invite res: ", res);
         dispatch(updateCollaboratiosActionFn(taskId)).then((res) => {
-          //console.log("update colab res: ", res);
-          dispatch(getInviteActionFn());
+          setSuccess(true);
+          console.log("update colab res: ", res);
         });
       })
       .catch((err) => {
+        setSuccess(false);
         console.log("err: ", err);
       });
+    // console.log("Id: ", id, "!!---- taskId: ", taskId);
   };
   const handleReject = (id) => {
     dispatch(updateInviteActionFn(id))
       .then((res) => {
-        dispatch(getInviteActionFn());
+        setSuccess(true);
       })
       .catch((err) => {
+        setSuccess(false);
         console.log("err: ", err);
       });
   };
-  console.log("invite: ", inviteData);
+  if (success) {
+    return (
+      <>
+        <Typography component={"h1"} variant="h3">
+          Your action has been granted.
+        </Typography>
+        <Link to="/">
+          <Button>Go to tasks</Button>
+        </Link>
+      </>
+    );
+  }
+  console.log("invite: ", invitation);
   return (
     <>
       <Container
@@ -74,7 +102,8 @@ const Invitation = () => {
           mt: 4,
         }}
       >
-        {inviteData.isLoading ? (
+        {error && <Typography>Something went wrong </Typography>}
+        {loading ? (
           <Box
             component={"span"}
             sx={{
@@ -88,53 +117,77 @@ const Invitation = () => {
           </Box>
         ) : (
           <>
-            <Card
-              sx={{
-                m: 0,
-                width: "100%",
-                position: "relative",
-                boxSizing: "border-box",
-                pb: "50px",
-              }}
-            >
-              <CardContent>
-                <Typography component="h1" variant="h6">
-                  {invitation.title}
+            {!invitation ? (
+              <>
+                <Typography component={"h1"} variant="h3">
+                  Your action has been granted.
                 </Typography>
-                <Typography>{invitation.description}</Typography>
-                <Stack
-                  direction={"row"}
-                  spacing={4}
-                  sx={{
-                    mt: "10px",
-                    p: 0,
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Chip
-                    label={invitation.status}
+                <Link to="/">
+                  <Button>Go to tasks</Button>
+                </Link>
+              </>
+            ) : (
+              <Card
+                sx={{
+                  m: 0,
+                  width: "100%",
+                  position: "relative",
+                  boxSizing: "border-box",
+                  pb: "50px",
+                }}
+              >
+                <CardContent>
+                  <Typography component="h1" variant="h6">
+                    {invitation.task?.title}
+                  </Typography>
+                  <Typography>{invitation.task?.description}</Typography>
+                  <Stack
+                    direction={"row"}
+                    spacing={4}
                     sx={{
-                      color: "#fff",
-                      background:
-                        invitation.status === "completed" ? "green" : "orange",
+                      mt: "10px",
+                      p: 0,
+                      justifyContent: "space-between",
+                      alignItems: "center",
                     }}
-                  />
-                  <Chip
-                    label={`Due ${invitation.dueDate}`}
-                    sx={{ color: "#fff", background: "blue" }}
-                  />
-                </Stack>
-              </CardContent>
+                  >
+                    <Chip
+                      label={invitation.task?.status}
+                      sx={{
+                        color: "#fff",
+                        background:
+                          invitation.task?.status === "completed"
+                            ? "green"
+                            : "orange",
+                      }}
+                    />
+                    <Chip
+                      label={`Due ${invitation.task?.dueDate}`}
+                      sx={{ color: "#fff", background: "blue" }}
+                    />
+                  </Stack>
+                </CardContent>
 
-              <CardActions sx={{ position: "absolute", bottom: 0, right: 0 }}>
-                <Button variant="contained">Accept</Button>
+                <CardActions sx={{ position: "absolute", bottom: 0, right: 0 }}>
+                  <Button
+                    variant="contained"
+                    onClick={() =>
+                      handleAccept(invitation._id, invitation.task?._id)
+                    }
+                  >
+                    Accept
+                  </Button>
 
-                <Button variant="contained" color="error">
-                  Reject
-                </Button>
-              </CardActions>
-            </Card>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleReject(invitation._id)}
+                  >
+                    Reject
+                  </Button>
+                </CardActions>
+              </Card>
+            )}
           </>
         )}
       </Container>

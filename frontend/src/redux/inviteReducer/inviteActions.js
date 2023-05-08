@@ -23,15 +23,15 @@ const postInviteActionFn = (invite) => (dispatch) => {
 };
 
 // get list INVITEs
-const getInviteActionFn = () => (dispatch) => {
+const getInviteActionFn = (taskId) => (dispatch) => {
   dispatch({ type: types.GET_INVITE_REQUEST });
-  return axios(`${base_url}/invite/get`, {
+  return axios(`${base_url}/invite/get/${taskId}`, {
     headers: headerObject(),
   })
     .then((res) => {
       return dispatch({
         type: types.GET_INVITE_SUCCESS,
-        payload: res.data.invitations,
+        payload: res.data.invitation,
       });
     })
     .catch((err) => {

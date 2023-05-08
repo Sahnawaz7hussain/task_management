@@ -32,11 +32,6 @@ function Navbar() {
   const { data } = useSelector((state) => state.inviteReducer);
   //const isAuth = false;
 
-  useEffect(() => {
-    if (isAuth) {
-      dispatch(getInviteActionFn());
-    }
-  }, [isAuth]);
   const handleLogout = (setting) => {
     if (setting === "Logout") {
       dispatch(userLogoutActionFn());
@@ -131,16 +126,6 @@ function Navbar() {
 
           {isAuth ? (
             <>
-              <Link
-                to="/invitations"
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
-                <Tooltip title="Invitations" sx={{ mr: 3 }}>
-                  <Badge badgeContent={data?.length} color="secondary">
-                    <NotificationsNoneOutlinedIcon />
-                  </Badge>
-                </Tooltip>
-              </Link>
               <Box sx={{ flexGrow: 0 }}>
                 <Tooltip title="Open settings">
                   <IconButton

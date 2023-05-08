@@ -5,7 +5,6 @@ const taskSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      maxLength: [20, "Name length should less than equal to 20 chars"],
     },
     description: { type: String, required: true },
     status: { type: String, default: "todo" },
@@ -14,7 +13,7 @@ const taskSchema = new mongoose.Schema(
 
     userId: { type: mongoose.Types.ObjectId, required: true, ref: "user" },
   },
-  { timestamps: true, versionKey: false }
+  { versionKey: false }
 );
 
 const TaskModel = mongoose.model("task", taskSchema);

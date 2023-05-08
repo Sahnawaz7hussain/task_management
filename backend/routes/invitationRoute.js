@@ -7,7 +7,7 @@ const {
 
 invitationRoute = express.Router();
 
-invitationRoute.get("/get", getInvitation);
+invitationRoute.get("/get/:taskId", getInvitation);
 invitationRoute.post("/add", addInvitation);
 invitationRoute.put("/update/:id", updateInvitation);
 

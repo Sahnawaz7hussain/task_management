@@ -8,6 +8,7 @@ import CreateTask from "../pages/CreateTask";
 import { Typography } from "@mui/material";
 import UpdateTask from "../pages/UpdateTask";
 import Invitation from "../pages/Invitation";
+import VerifyEmail from "../pages/VerifyEmail";
 const MainRoute = () => {
   return (
     <Routes>
@@ -44,6 +45,7 @@ const MainRoute = () => {
           </PrivateRoute>
         }
       />
+      <Route path="/verify/:hash/:email" element={<VerifyEmail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="*" element={<Typography>Page not found</Typography>} />

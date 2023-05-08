@@ -23,11 +23,14 @@ let initData = {
 const CreateTask = () => {
   const dispatch = useDispatch();
   const [data, setData] = useState(initData);
+  const [creating, setCreating] = useState(false);
   const [invite, setInvite] = useState([]);
+  const [emails, setEmails] = useState([]);
 
   const { isLoading, isError, users } = useSelector(
     (state) => state.authReducer
   );
+  // console.log("user: ", users);
 
   useEffect(() => {
     dispatch(getAllUsersActionFn());
@@ -42,14 +45,15 @@ const CreateTask = () => {
 
   const handleCreate = () => {
     if (!data.title || !data.description || !data.dueDate) return;
+    setCreating(true);
     dispatch(postTaskActionFn(data))
       .then((res) => {
         if (res.type === "ADD_TASK_SUCCESS") {
           if (invite.length > 0) {
-            console.log("done: ");
             dispatch(
               postInviteActionFn({
                 invitations: invite,
+                emails: emails,
                 task: res.payload.task._id,
                 title: data.title,
                 ...getNameAndEmail(),
@@ -58,6 +62,7 @@ const CreateTask = () => {
               alert(`New task created`);
               //console.log("invite res: ", res);
               setData(initData);
+              setCreating(false);
             });
           } else {
             alert(`New task created`);
@@ -67,20 +72,32 @@ const CreateTask = () => {
         }
       })
       .catch((err) => {
+        setCreating(false);
         console.log(err);
       });
   };
 
   const handleCheckbox = (e) => {
     let option = e.target.value;
+    let options = option.split("+");
+    //  console.log("option: ", options);
     let newInvite = [...invite];
-    if (newInvite.includes(option)) {
-      newInvite.splice(newInvite.indexOf(option), 1);
+    let newEmails = [...emails];
+    if (newInvite.includes(options[0])) {
+      newInvite.splice(newInvite.indexOf(options[0]), 1);
+      newEmails.splice(newEmails.indexOf(options[1]), 1);
     } else {
-      newInvite.push(option);
+      newInvite.push(options[0]);
+      newEmails.push(options[1]);
     }
+    // console.log("inside checkbox: invite", newInvite);
+    // console.log("inside checkbox: emails", newEmails);
     setInvite(newInvite);
+    setEmails(newEmails);
   };
+
+  // console.log("invite", invite);
+  // console.log("emails", emails);
   return (
     <Box component={"form"} sx={{ mt: 5, mb: 15 }}>
       <Container
@@ -121,7 +138,7 @@ const CreateTask = () => {
                 key={idx}
                 control={
                   <Checkbox
-                    value={user._id}
+                    value={`${user._id}+${user.email}`}
                     onChange={(e) => handleCheckbox(e)}
                   />
                 }
@@ -138,7 +155,7 @@ const CreateTask = () => {
           onChange={handleOnChange}
         />
         <Button variant="contained" fullWidth onClick={handleCreate}>
-          Add
+          {creating ? "Creating new task..." : "Create new task"}
         </Button>
       </Container>
     </Box>

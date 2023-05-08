@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import { Link, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +17,7 @@ import {
   getDeadlineExceededTasksActionFn,
   getTaskActionFn,
 } from "../redux/taskReducer/taskActions";
+import { AppContext } from "../context/AppContext";
 
 const Tasks = () => {
   const dispatch = useDispatch();
@@ -24,6 +25,7 @@ const Tasks = () => {
   const [filter, setFilter] = useState(searchParams.get("tasks") || "all");
   const [page, setPage] = useState(searchParams.get("_page") || 1);
   const [isDeadline, setIsDeadline] = useState(false);
+  const [statusUpdated, setStatusUpdated] = useState(false);
   const { isLoading, isError, data } = useSelector(function (state) {
     return state.taskReducer;
   });
@@ -47,7 +49,9 @@ const Tasks = () => {
     if (query.tasks !== null || query._page !== null) {
       getTasks(query);
     }
-  }, [searchParams]);
+  }, [searchParams, statusUpdated]);
+
+  const { socket } = useContext(AppContext);
 
   // HANLDE GET DEADLINE PASSED TASKS;
   const handleOnClickDeadlineExceeded = () => {
@@ -79,10 +83,21 @@ const Tasks = () => {
       });
   };
 
-  // UPDATE TASK TITLE OR DESCRIPTION.
-  const updateTask = (id) => {
-    alert(`${id}`);
+  const updateTaskStatus = (status, taskId) => {
+    if (isDeadline) return;
+    socket.emit("update-status", { status, taskId });
+    setStatusUpdated(false);
   };
+
+  // listen socket update status
+  socket.on("status-updated", (updatedData) => {
+    if (updatedData.status) {
+      setStatusUpdated(true);
+    } else {
+      setStatusUpdated(false);
+    }
+    // console.log("data: ", updatedData);
+  });
   return (
     <Box sx={{ px: { xs: 2, sm: 2, md: 5 } }}>
       <Stack
@@ -147,7 +162,7 @@ const Tasks = () => {
               key={idx}
               task={task}
               deleteTask={deleteTask}
-              updateTask={updateTask}
+              updateTaskStatus={updateTaskStatus}
             />
           ))}
       </Box>
